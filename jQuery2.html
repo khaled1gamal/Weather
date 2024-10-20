@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Data (Multilingual)</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+  <h1 id="title">Weather Information</h1>
+  
+  <!-- Input for city name -->
+  <input type="text" id="city" placeholder="Enter city name">
+  <button id="get-weather">Get Weather</button>
+
+  <!-- Display weather data -->
+  <div id="weather-result"></div>
+
+  <script>
+    // Detect the user's language
+    var userLang = navigator.language || navigator.userLanguage; 
+    var lang = userLang.startsWith('ar') ? 'ar' : 'en'; // Set to 'ar' for Arabic or 'en' for English
+
+    console.log(lang);
+
+    // Language-specific text
+    var texts = {
+      en: {
+        title: "Weather Information",
+        placeholder: "Enter city name",
+        button: "Get Weather",
+        error: "Could not retrieve weather data for this city.",
+        description: "Description",
+        temperature: "Temperature",
+        humidity: "Humidity",
+        windSpeed: "Wind Speed"
+      },
+      ar: {
+        title: "معلومات الطقس",
+        placeholder: "أدخل اسم المدينة",
+        button: "احصل على الطقس",
+        error: "تعذر العثور على بيانات الطقس لهذه المدينة.",
+        description: "الوصف",
+        temperature: "درجة الحرارة",
+        humidity: "الرطوبة",
+        windSpeed: "سرعة الرياح"
+      }
+    };
+
+    // Set the text according to the user's language
+    document.getElementById('title').textContent = texts[lang].title;
+    document.getElementById('city').placeholder = texts[lang].placeholder;
+    document.getElementById('get-weather').textContent = texts[lang].button;
+
+    $(document).ready(function() {
+      $('#get-weather').click(function() {
+        // Get the city name from input
+        var city = $('#city').val();
+
+        // Check if the user entered a city
+        if (city === '') {
+          alert(texts[lang].error);
+          return;
+        }
+
+        // Your API key from OpenWeather
+        var apiKey = 'a6cec80f2850336ccdfba5e4e1526748'; // Replace YOUR_API_KEY with your actual API key
+
+        // API URL to get weather data (set lang for response)
+        var apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=${lang}`;
+
+        // AJAX request to fetch weather data
+        $.ajax({
+          url: apiUrl,
+          type: 'GET',
+          success: function(response) {
+            // Display the weather data
+            var weatherData = `
+              <h2>${texts[lang].title} ${response.name}</h2>
+              <p>${texts[lang].description}: ${response.weather[0].description}</p>
+              <p>${texts[lang].temperature}: ${response.main.temp} °C</p>
+              <p>${texts[lang].humidity}: ${response.main.humidity}%</p>
+              <p>${texts[lang].windSpeed}: ${response.wind.speed} m/s</p>
+            `;
+            $('#weather-result').html(weatherData);
+          },
+          error: function(error) {
+            console.error('Error occurred:', error);
+            alert(texts[lang].error);
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
