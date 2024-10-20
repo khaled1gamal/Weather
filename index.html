@@ -89,6 +89,11 @@
               <p>${texts[lang].windSpeed}: ${response.wind.speed} m/s</p>
             `;
             $('#weather-result').html(weatherData);
+             if (lang === 'en') {
+              $('#weather-result').attr('dir','ltr')
+            }else{
+              $('#weather-result').attr('dir','rtl')
+            }
           },
           error: function(error) {
             console.error('Error occurred:', error);
