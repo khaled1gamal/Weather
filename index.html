@@ -6,21 +6,99 @@
   <title>Weather Data (Multilingual)</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
-    *{
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 60%;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #weather-result {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+
+    .loading {
+      display: none;
       text-align: center;
+      margin: 20px 0;
+    }
+
+    .language-switch {
+      position: absolute;
+      top: 27px;
+      right: 27px;
+      padding: 5px 10px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .error-message {
+      color: red;
+      margin-top: 10px;
+      display: none;
     }
   </style>
 </head>
 <body>
+  <button class="language-switch" id="lang-switch">عربي/English</button>
 
-  <h1 id="title">Weather Information</h1>
-  
-  <!-- Input for city name -->
-  <input type="text" id="city" placeholder="Enter city name">
-  <button id="get-weather">Get Weather</button>
-
-  <!-- Display weather data -->
-  <div id="weather-result"></div>
+  <div class="container">
+    <h1 id="title">Weather Information</h1>
+    
+    <div class="input-group">
+      <input type="text" id="city" placeholder="Enter city name">
+      <button id="get-weather">Get Weather</button>
+    </div>
+    
+    <div class="error-message" id="error-message"></div>
+    <div class="loading" id="loading">Loading weather data...</div>
+    <div id="weather-result"></div>
+  </div>
 
   <script>
     // Detect the user's language
@@ -58,14 +136,33 @@
     document.getElementById('city').placeholder = texts[lang].placeholder;
     document.getElementById('get-weather').textContent = texts[lang].button;
 
+    // Add language switch functionality
     $(document).ready(function() {
-      $('#get-weather').click(function() {
-        // Get the city name from input
-        var city = $('#city').val();
+      $('#lang-switch').click(function() {
+        lang = lang === 'en' ? 'ar' : 'en';
+        updateLanguage();
+      });
 
-        // Check if the user entered a city
+      function updateLanguage() {
+        document.getElementById('title').textContent = texts[lang].title;
+        document.getElementById('city').placeholder = texts[lang].placeholder;
+        document.getElementById('get-weather').textContent = texts[lang].button;
+        document.getElementById('loading').textContent = lang === 'en' ? 'Loading weather data...' : 'جاري تحميل بيانات الطقس...';
+        document.getElementById('lang-switch').textContent = lang === 'en' ? 'عربي' : 'English';
+        
+        // Update direction
+        $('body').attr('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      }
+
+      $('#get-weather').click(function() {
+        var city = $('#city').val();
+        $('#error-message').hide();
+        $('#loading').show();
+        $('#weather-result').empty();
+
         if (city === '') {
-          alert(texts[lang].error);
+          $('#error-message').text(texts[lang].error).show();
+          $('#loading').hide();
           return;
         }
 
@@ -80,7 +177,7 @@
           url: apiUrl,
           type: 'GET',
           success: function(response) {
-            // Display the weather data
+            $('#loading').hide();
             var weatherData = `
               <h2>${texts[lang].title} ${response.name}</h2>
               <p>${texts[lang].description}: ${response.weather[0].description}</p>
@@ -89,15 +186,21 @@
               <p>${texts[lang].windSpeed}: ${response.wind.speed} m/s</p>
             `;
             $('#weather-result').html(weatherData);
-             if (lang === 'en') {
+            console.log(response.weather);
+            console.log(response.main);
+            console.log(response.wind);
+            console.log(response.rain);
+            console.log(lang === 'en');
+            if (lang === 'en') {
               $('#weather-result').attr('dir','ltr')
             }else{
               $('#weather-result').attr('dir','rtl')
             }
           },
           error: function(error) {
+            $('#loading').hide();
+            $('#error-message').text(texts[lang].error).show();
             console.error('Error occurred:', error);
-            alert(texts[lang].error);
           }
         });
       });
